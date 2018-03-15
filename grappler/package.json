@@ -1,0 +1,37 @@
+{
+  "name": "boothby.grappler",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "lint": "tslint src/*.ts src/**/*.ts",
+    "lint-fix": "yarn lint --fix",
+    "dev": "yarn && tsc --watch"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@types/amqplib": "^0.5.7",
+    "@types/dotenv": "^4.0.2",
+    "@types/express": "^4.11.0",
+    "@types/lodash": "^4.14.104",
+    "@types/node": "^9.4.0",
+    "@types/redis": "^2.8.5",
+    "@types/uuid": "^3.4.3",
+    "amqplib": "^0.5.2",
+    "avsc": "^5.2.3",
+    "bluebird": "^3.5.1",
+    "body-parser": "^1.18.2",
+    "boothby-definitions": "https://github.com/boothbyorg/definitions/archive/0.0.15.tar.gz",
+    "dotenv": "^4.0.0",
+    "express": "^4.16.2",
+    "kafka-node": "^2.3.2",
+    "lodash": "^4.17.5",
+    "redis": "^2.8.0",
+    "rxjs": "^5.5.6",
+    "sinek": "^6.14.0",
+    "tslint": "^5.9.1",
+    "typescript": "^2.6.2",
+    "uuid": "^3.2.1"
+  }
+}
