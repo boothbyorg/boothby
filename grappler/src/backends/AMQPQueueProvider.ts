@@ -22,6 +22,7 @@ export class AMQPQueueProvider implements IQueueProvider {
   private grapplerRequest = Type.forSchema(Definitions.GrapplerRequest);
   private grapplerResponse = Type.forSchema(Definitions.GrapplerResponse);
 
+  
   public setup(): Observable<boolean> {
     return Observable.fromPromise(connect(process.env.AMQP_URL))
       .flatMap((connection) => {
@@ -76,7 +77,7 @@ export class AMQPQueueProvider implements IQueueProvider {
       })
       .filter((resp) => resp.requestId === requestId)
       .take(1)
-      .timeoutWith(900, Observable.of({
+      .timeoutWith(3000, Observable.of({
         body: "Unable to process request.",
         isBase64: false,
         requestId,
@@ -87,7 +88,6 @@ export class AMQPQueueProvider implements IQueueProvider {
   private processResponse(msg: Message): void {
     const resp: any = this.grapplerResponse.fromBuffer(msg.content);
     this.messages.next(resp as Definitions.ILambdaResponse);
-    console.log("acking!");
     this.sub.ack(msg);
   }
 

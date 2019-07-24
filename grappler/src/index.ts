@@ -24,7 +24,8 @@ provider.setup().take(1).subscribe((result) => {
   process.on("SIGINT", () => {
     server.close();
     provider.tearDown().take(1).subscribe(() => { console.log("Destroyed"); });
+    application.close();
 
-    console.log("destroying");
+    console.log("Shutting Down Server");
   });
 });
