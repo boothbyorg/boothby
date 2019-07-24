@@ -38,3 +38,5 @@ function sendRequest() {
 
   setTimeout(sendRequest, random(1000, 10000));
 }
+
+setTimeout(sendRequest, 0);
