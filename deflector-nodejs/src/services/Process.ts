@@ -1,12 +1,10 @@
 import { ChildProcess, spawn } from "child_process";
-import { readFileSync, unlink } from "fs";
+import { unlink } from "fs";
 import { connect, Socket } from "net";
 import { BehaviorSubject, Observable, Observer, Subject } from "rxjs";
 import { v4 } from "uuid";
 
-import shortid =  require("shortid");
 import { ILambdaResponse } from "src/interfaces/ILambdaResponse";
-import { ILogger } from "../interfaces";
 
 import { readProtocol, Service } from "avsc";
 import { Definitions } from "boothby-definitions";
@@ -26,6 +24,10 @@ interface IBeaconClient extends Service.Client {
     ProcessRequest(err: any, arg1: (err: Error, res: any) => void): void;
 }
 
+/**
+ * This class houses exactly 1 process that can be in any of the states above.
+ * A process will always work on 1 task at a time.
+ */
 export class Process {
   public readonly id = v4();
 
@@ -47,6 +49,10 @@ export class Process {
     this.options = options;
   }
 
+  /**
+   * Starts the process and establishes communication between this process and the child processes that execute the
+   * request.
+   */
   public start() {
     if (this.processState === ProcessState.PROCESS_CREATING) {
       const protocol = Definitions.Beacon;
@@ -95,14 +101,25 @@ export class Process {
     }
   }
 
+  /**
+   * Return the observable state
+   */
   public getState() {
     return this.processState$;
   }
 
+  /**
+   * Returns just the current state of the process.
+   */
   public getCurrentState() {
     return this.processState;
   }
 
+  /**
+   * The function is the meat of handling the request. It pushes it to the created process and handles
+   * errors, responses and any undefined behaviour.
+   * @param request
+   */
   public handleRequest(request: Definitions.ILambdaRequest): Observable<ILambdaResponse> {
     if (this.getCurrentState() === ProcessState.PROCESS_READY) {
       this.requestId = request.requestId;
@@ -122,7 +139,7 @@ export class Process {
           this.processData$.next(arg1);
         });
       } catch (e) {
-
+        console.error(e);
       }
       this.setState(ProcessState.PROCESS_REQUEST_SENT);
 
@@ -193,12 +210,20 @@ export class Process {
     });
   }
 
+  /**
+   * Drains the logs from the process and sends them to the logger.
+   * @param response
+   */
   private drainLogs(response: ILambdaResponse) {
     response.logs.forEach((log) => {
       this.options.getLogger().write(log);
     });
   }
 
+  /**
+   * Updates the state of the process and publishes to a observable.
+   * @param toState The state to change to.
+   */
   private setState(toState: ProcessState) {
     this.processState = toState;
     this.processState$.next(toState);
@@ -214,6 +239,9 @@ export class Process {
     return this.destroy();
   }
 
+  /**
+   * Handles termination of the process and any cleanup needed.
+   */
   private cleanup() {
     // If the process is not killed, send a SIGKILL.
     if (!this.process.killed) {

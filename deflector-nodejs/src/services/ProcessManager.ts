@@ -1,34 +1,44 @@
 import Denque = require("denque");
 
 import { Definitions } from "boothby-definitions";
+import { remove } from "lodash";
 import { ILogger } from "src/interfaces";
 import { ConsoleLogger } from "../loggers/ConsoleLogger";
 import { AMQPProcessor, IProcessor } from "../processors";
 import { Process, ProcessState } from "./Process";
 import { ProcessOptions } from "./ProcessOptions";
-import { remove } from "lodash"
 
+/**
+ * This class is responsible for managing the cluster of processes.
+ * It is job is to ensure that there are open processors up at all times.
+ */
 export class ProcessManager {
-
   public processes: Process[] = [];
   public logger: ILogger = new ConsoleLogger();
   public processor: IProcessor = new AMQPProcessor();
-
   public processorQueue = new Denque<Process>([]);
-
   private processorStarted = false;
 
+  /**
+   * Setups up the initial set of processes up to the max.
+   */
   constructor() {
     for (let i = 0; i < parseInt(process.env.MAX_PROCESSES, 10); i++) {
       this.processes.push(this.createProcess(true));
     }
   }
 
+  /**
+   * Acts like a shutdown function but stops all sub-processes and ensures cleanup is done on those.
+   */
   public destroy() {
     this.processes.forEach((p) => p.destroy());
     this.processor.destroy();
   }
 
+  /**
+   * Sets up processing responses from processors.
+   */
   public setupProcessor() {
     this.processorStarted = true;
     this.processor
@@ -38,6 +48,10 @@ export class ProcessManager {
     this.processor.setup().take(1).subscribe();
   }
 
+  /**
+   * Creates a new process and optionally starts the process so that it can be ready to process requests.
+   * @param start Should the process be started.
+   */
   private createProcess(start: boolean): Process {
     const p = new Process(new ProcessOptions(this.logger));
 
@@ -50,6 +64,10 @@ export class ProcessManager {
     return p;
   }
 
+  /**
+   * Handles requests that come in.
+   * @param msg
+   */
   private onRequest(msg: Definitions.ILambdaRequest) {
     const handler = this.processorQueue.pop();
 
@@ -69,6 +87,11 @@ export class ProcessManager {
       });
   }
 
+  /**
+   * This function handles process state changes, such as a process dying or getting ready.
+   * @param p The process who's state has changed
+   * @param state The state of the process.
+   */
   private onProcessStateChange(p: Process, state: ProcessState) {
     if (state === ProcessState.PROCESS_READY) {
       this.processorQueue.push(p);

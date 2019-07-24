@@ -13,5 +13,5 @@ const sub: RedisClient = client.duplicate();
 sub.subscribe(process.env.CONSUMER_NAME);
 
 sub.on("message", (channel, message) => {
-  client.publish(JSON.parse(message).requestId, "YO IT TWERKED!!");
+  client.publish(JSON.parse(message).requestId, "Response Worked");
 });

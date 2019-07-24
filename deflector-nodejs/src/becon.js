@@ -1,3 +1,10 @@
+// This file is purposely left with very little documentation as it will be running alongside the function code
+// and can easily be inspected by users who try to upload functions that act has trojan horses. Ideally, we'd
+// write a pre-processor that strips this file of all comments before packing grappler. This job of this file
+// is to act as the bridge between the core backend code (secure) of grappler and the code (unsecure)
+// that's provided as the function. Grappler will push a request into this file, and the file will handle pushing
+// the request onto the actual function.
+
 const assert = require('assert');
 
 const lambdaHandler = process.env['LAMBDA_HANDLER'];

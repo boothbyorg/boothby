@@ -22,7 +22,9 @@ export class AMQPQueueProvider implements IQueueProvider {
   private grapplerRequest = Type.forSchema(Definitions.GrapplerRequest);
   private grapplerResponse = Type.forSchema(Definitions.GrapplerResponse);
 
-  
+  /**
+   * Setup the AMQP channels, and get the connections setup for request processing.
+   */
   public setup(): Observable<boolean> {
     return Observable.fromPromise(connect(process.env.AMQP_URL))
       .flatMap((connection) => {
@@ -33,7 +35,7 @@ export class AMQPQueueProvider implements IQueueProvider {
         this.queue = channels[0];
         this.sub = channels[1];
 
-        // The queue is niether marked as durable nor is it marked for peristance.
+        // The queue is neither marked as durable nor is it marked for persistence.
         // In later versions these features might make sense as a tradeoff
         // for latency, assuming the behaviour is something the client is
         // wanting (eg retry behavior? dead letter queue?)
@@ -54,6 +56,9 @@ export class AMQPQueueProvider implements IQueueProvider {
       });
   }
 
+  /**
+   * Handle tearing down the AMQP connections for shutdown.
+   */
   public tearDown(): Observable<boolean> {
     this.messages.complete();
 
@@ -67,6 +72,11 @@ export class AMQPQueueProvider implements IQueueProvider {
       .flatMap(() => Observable.of(true));
   }
 
+  /**
+   * Handles processing requests that come in and returns a response.
+   * @param req
+   * @param res
+   */
   public processRequest(req: Request, res: Response): Observable<Definitions.ILambdaResponse> {
     const requestId = res.get("X-Request-Id");
     const x = this.buildGrapplerRequest(req, res);
@@ -85,12 +95,21 @@ export class AMQPQueueProvider implements IQueueProvider {
       }));
   }
 
+  /**
+   * Handles converting a response back into a usable object that can be sent to the user.
+   * @param msg
+   */
   private processResponse(msg: Message): void {
     const resp: any = this.grapplerResponse.fromBuffer(msg.content);
     this.messages.next(resp as Definitions.ILambdaResponse);
     this.sub.ack(msg);
   }
 
+  /**
+   * Used to take a HTTP request and build a grappler request object.
+   * @param req
+   * @param res
+   */
   private buildGrapplerRequest(req: Request, res: Response): Buffer {
     const obj = {
       callbackQueueName: this.queueIdentifier,

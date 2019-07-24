@@ -31,7 +31,7 @@ export class AMQPProcessor implements IProcessor {
         this.pub = channels[1];
 
         this.queue.assertQueue(this.processQueue, { durable: false });
-        
+
         this.queue.prefetch(1);
 
         this.queue.consume(this.processQueue, (msg) => {
