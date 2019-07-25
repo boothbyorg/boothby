@@ -17,7 +17,7 @@ export class KafkaLogger implements ILogger {
   }
 
   public write(message: ILogMessage) {
-    this.producer.send([{topic: "deflector-logs", messages: ["kek1"]}], (err, data) => {
+    this.producer.send([{topic: "deflector-logs", messages: message}], (err, data) => {
       // If there is an error, enqueue the message to be sent back.
       if (err) {
         this.q.push(message);

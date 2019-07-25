@@ -6,7 +6,7 @@ dotenv.config();
 import { Type } from "avsc";
 import * as http from "http";
 import App from "./App";
-import {AMQPQueueProvider, SimpleRedisQueueProvider} from "./backends";
+import {AMQPQueueProvider} from "./backends";
 
 const provider = new AMQPQueueProvider();
 
