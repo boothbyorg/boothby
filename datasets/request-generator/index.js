@@ -23,7 +23,7 @@ function sendRequest() {
 
   const request = require('request');
 
-  request.post('http://10.0.0.49:3000/', {
+  request.post('http://127.0.0.1:3000/', {
     json: {
       text: possibleRequests[Math.floor(Math.random() * possibleRequests.length)]
     }
@@ -36,7 +36,7 @@ function sendRequest() {
     console.log(body)
   });
 
-  setTimeout(sendRequest, random(1000, 10000));
+  setTimeout(sendRequest, random(100, 10000));
 }
 
 setTimeout(sendRequest, 0);
