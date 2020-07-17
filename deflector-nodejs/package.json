@@ -30,7 +30,7 @@
     "denque": "^1.2.3",
     "dotenv": "^5.0.0",
     "kafka-node": "^2.4.1",
-    "lodash": "^4.17.5",
+    "lodash": "^4.17.19",
     "mocha": "^5.0.1",
     "mocha-typescript": "^1.1.12",
     "redis": "^2.8.0",
